@@ -1,16 +1,18 @@
-from dotenv import load_dotenv
-import os
 import requests 
 import json
+from datetime import date, datetime
+from airflow.decorators import task
+from airflow.models import Variable
 
-load_dotenv(dotenv_path=".env") # to load environment variables from a .env file located in the current directory.          
-CHANNEL_HANDLE=os.getenv("CHANNEL_HANDLE")
-API_KEY=os.getenv("API_KEY")
+
+CHANNEL_HANDLE=Variable.get("CHANNEL_HANDLE")
+API_KEY=Variable.get("API_KEY")
 MaxResults=50
 
 
 url= f"https://youtube.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle={CHANNEL_HANDLE}&key={API_KEY}"
 
+@task
 def get_playlist_id():
     try:
         response=requests.get(url)
@@ -28,7 +30,7 @@ def get_playlist_id():
     except requests.exceptions.RequestException as e:
         raise e
     
-    
+@task    
 def get_video_ids(playlist_id):
     video_ids=[]
     pagetoken= None
@@ -52,6 +54,7 @@ def get_video_ids(playlist_id):
     except requests.exceptions.RequestException as e:
         raise e
 
+@task
 def extract_video_data(video_id): 
     extracted_data=[]
 
@@ -89,9 +92,18 @@ def extract_video_data(video_id):
     
     except requests.exceptions.RequestException as e:
         raise e
+ 
+@task    
+def save_data_to_json(extracted_data):
+    file_path=f"./data/yt_data_{date.today()}.json"
+    
+    with open(file_path,"w",encoding="utf-8") as json_outfile:
+        json.dump(extracted_data,json_outfile,indent=4,ensure_ascii=False) # to convert a python object to a json like formatted string with indentation for better readability and ensure_ascii=False to allow non-ASCII characters to be written as is in the JSON file instead of being escaped.
+
 if __name__=="__main__":
     playlist_id=get_playlist_id()
     video_ids=get_video_ids(playlist_id)
-    extract_video_data(video_ids)
+    extracted_data=extract_video_data(video_ids)
+    save_data_to_json(extracted_data)
     
    

@@ -1,6 +1,6 @@
 import logging
 
-logger=logging.getlogger(__name__)
+logger=logging.getLogger(__name__)
 table="yt_api"
 
 def insert_rows(cur,conn,schema,row):
@@ -17,8 +17,8 @@ def insert_rows(cur,conn,schema,row):
         else:
             video_id="Video_ID"
             cur.execute(f"""
-                INSERT INTO {schema}.{table} ("Video_ID","Video_Title","Upload_Date","Duration","Video_Views","Likes_Count","Comments_Count")
-                VALUES (%(Video_ID)s,%(Title)s,%(PublishedAt)s,%(Duration)s,%(Video_Type)s,%(Video_Views)s,%(Likes_Count)s,%(Comments_Count)s)
+                INSERT INTO {schema}.{table} ("Video_ID","Video_Title","Upload_Date","Duration","Video_Type","Video_Views","Likes_Count","Comments_Count")
+                VALUES (%(Video_ID)s,%(Video_Title)s,%(Upload_Date)s,%(Duration)s,%(Video_Type)s,%(Video_Views)s,%(Likes_Count)s,%(Comments_Count)s)
             """,row
             )
         conn.commit()

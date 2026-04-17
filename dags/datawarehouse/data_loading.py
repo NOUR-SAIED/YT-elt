@@ -4,7 +4,7 @@ from datetime import date
 
 logger=logging.getLogger(__name__) # to create a logger object for the current module, which can be used to log messages with different severity levels (e.g., info, warning, error) throughout the code.
 
-def load_path(): 
+def load_data(): 
     """This function is responsible for loading the data from the specified file path and returning it as a Python object. It also includes error handling to manage potential issues with file access or JSON decoding."""
     file_path=f"./data/yt_data_{date.today()}.json"
     

@@ -34,9 +34,10 @@ def get_playlist_id():
 def get_video_ids(playlist_id):
     video_ids=[]
     pagetoken= None
-    url=f"https://youtube.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId={playlist_id}&maxResults={MaxResults}&key={API_KEY}"
+    base_url=f"https://youtube.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId={playlist_id}&maxResults={MaxResults}&key={API_KEY}"
     try:
-        while True:
+        while True: # to handle pagination and retrieve all video IDs from the playlist, Keep fetching pages until there are no more pages
+            url = base_url
             if pagetoken:
                 url+=f"&pageToken={pagetoken}"
             response=requests.get(url)

@@ -3,7 +3,7 @@ from airflow import DAG
 from api.video_stats import get_playlist_id, get_video_ids, extract_video_data , save_data_to_json
 from datetime import datetime, timedelta
 from datawarehouse.dwh import staging_table, core_table
-
+from dataquality.soda import yt_elt_data_quality
 
 # Define the local timezone
 local_tz = pendulum.timezone("Africa/Tunis")
@@ -22,6 +22,9 @@ default_args = {
     "start_date": datetime(2025, 1, 1, tzinfo=local_tz),
     # 'end_date': datetime(2030, 12, 31, tzinfo=local_tz),
 }
+
+staging_schema = "staging"
+core_schema = "core"
 
 # Define the DAG
 with DAG (
@@ -54,3 +57,18 @@ with DAG (
     
     #dependency between tasks
     update_staging >> update_core
+    
+with DAG (
+    dag_id="data_quality_checks",
+    default_args=default_args,
+    description="Dag to perform data quality checks using SODA",
+    schedule="0 16 * * *",
+    catchup=False #not to catch up on past runs when the DAG is first created or when it is turned on after being off for a while.
+) as dag:
+        
+    #define tasks 
+    soda_validate_staging=yt_elt_data_quality(staging_schema)
+    soda_validate_core=yt_elt_data_quality(core_schema)
+    
+    #dependency between tasks
+    soda_validate_staging >> soda_validate_core
